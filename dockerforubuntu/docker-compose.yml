@@ -1,0 +1,380 @@
+services:
+  bazarr:
+    image: ghcr.io/linuxserver/bazarr
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${BAZARR_PORT_6767}:6767
+    container_name: bazarr
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${BAZARR_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/bazarr:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+      - ${MOVIES_DIR}:/Movies
+      - ${TVSHOWS_DIR}:/tvshows
+    networks:
+      - frontend
+  deluge:
+    image: ghcr.io/linuxserver/deluge
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${DELUGE_PORT_51413}:51413
+      - ${DELUGE_PORT_51413}:51413/udp
+      - ${DELUGE_PORT_58846}:58846
+      - ${DELUGE_PORT_58946}:58946
+      - ${DELUGE_PORT_6881}:6881
+      - ${DELUGE_PORT_6881}:6881/udp
+      - ${DELUGE_PORT_8112}:8112
+    container_name: deluge
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${DELUGE_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/deluge:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+      - ${DOWNLOAD_DIR}:/Downloads
+    networks:
+      - frontend
+  duplicati:
+    image: ghcr.io/linuxserver/duplicati
+    container_name: duplicati
+    environment:
+      - PUID=${PGID}
+      - PGID=${PUID}
+      - TZ=${TZ}
+      - CLI_ARGS= #optional
+    volumes:
+      - ${DOCKERCONFDIR}/Duplicati:/config
+      - ${BACKUP_DIR}:/backups
+      - ${DOCKERCONFDIR}:/source
+    ports:
+      - 8200:8200
+    restart: unless-stopped
+    networks:
+      - frontend
+  glances:
+    image: nicolargo/glances
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${GLANCES_PORT_61208}:61208
+      - ${GLANCES_PORT_61209}:61209
+    container_name: glances
+    environment:
+      - GLANCES_OPT=-w
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    pid: host
+    restart: ${GLANCES_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DOCKERCONFDIR}/glances:/glances/conf
+      - ${DOCKERSTORAGEDIR}:/storage
+  jackett:
+    image: ghcr.io/linuxserver/jackett
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${JACKETT_PORT_9117}:9117
+    container_name: jackett
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${JACKETT_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/jackett:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+    networks:
+      - frontend
+  mariadb:
+    image: ghcr.io/linuxserver/mariadb
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${MARIADB_PORT_3306}:3306
+    container_name: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MARIADB_MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=polio14155
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${MARIADB_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/mariadb:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+    networks:
+      - frontend
+  nextcloud:
+    image: ghcr.io/linuxserver/nextcloud
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${NEXTCLOUD_PORT_443}:443
+    container_name: nextcloud
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+      - MYSQL_PASSWORD=polio14155
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=mariadb
+    networks:
+      - frontend
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${NEXTCLOUD_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/nextcloud:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+      - ${NEXTCLOUD_DATADIR}:/data
+  ombi:
+    image: ghcr.io/linuxserver/ombi
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${OMBI_PORT_3579}:3579
+    container_name: ombi
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${OMBI_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/ombi:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+    networks:
+      - frontend
+  organizr:
+    image: ghcr.io/organizr/organizr
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${ORGANIZR_PORT_80}:80
+    container_name: organizr
+    environment:
+      - branch=${ORGANIZR_BRANCH}
+      - fpm=${ORGANIZR_FPM}
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${ORGANIZR_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/organizr:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+    networks:
+      - frontend
+  plex:
+    image: ghcr.io/linuxserver/plex
+    network_mode: ${PLEX_NETWORK_MODE}
+    container_name: plex
+    environment:
+      - PGID=${PGID}
+      - PLEX_CLAIM=${PLEX_CLAIM}
+      - PUID=${PUID}
+      - TZ=${TZ}
+      - VERSION=${PLEX_VERSION}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${PLEX_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/plex:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+      - ${MOVIES_DIR}:/Movies
+      - ${TVSHOWS_DIR}:/TVShows
+  portainer:
+    image: portainer/portainer-ce
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${PORTAINER_PORT_9000}:9000
+    command: -H unix:///var/run/docker.sock
+    container_name: portainer
+    environment:
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${PORTAINER_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKERCONFDIR}/portainer:/data
+      - ${DOCKERSTORAGEDIR}:/storage
+  radarr:
+    image: ghcr.io/linuxserver/radarr
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${RADARR_PORT_7878}:7878
+    container_name: radarr
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${RADARR_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/radarr:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+      - ${MOVIES_DIR}:/Movies
+      - ${DOWNLOAD_DIR}:/Downloads
+    networks:
+      - frontend
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${SONARR_PORT_8989}:8989
+    container_name: sonarr
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${SONARR_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/sonarr:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+      - ${TVSHOWS_DIR}:/tvshows
+      - ${DOWNLOAD_DIR}:/Downloads
+    networks:
+      - frontend
+  speedtest:
+    image: henrywhitaker3/speedtest-tracker
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${SPEEDTEST_PORT_80}:80
+    container_name: speedtest
+    environment:
+      - OOKLA_EULA_GDPR=${SPEEDTEST_OOKLA_EULA_GDPR}
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - BASE_PATH=${SPEEDTEST_BASE_PATH}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${SPEEDTEST_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/speedtest:/config
+      - ${DOCKERSTORAGEDIR}:/storage
+  tautulli:
+    image: ghcr.io/linuxserver/tautulli
+    hostname: ${DOCKERHOSTNAME}
+    ports:
+      - ${TAUTULLI_PORT_8181}:8181
+    container_name: tautulli
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${TAUTULLI_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/tautulli:/config
+      - ${DOCKERCONFDIR}/plex/Library/Application Support/Plex Media Server/Logs:/logs:ro
+      - ${DOCKERSTORAGEDIR}:/storage
+    networks:
+      - frontend
+  watchtower:
+    image: containrrr/watchtower
+    hostname: ${DOCKERHOSTNAME}
+    container_name: watchtower
+    environment:
+      - REPO_PASS=${WATCHTOWER_REPO_PASS}
+      - REPO_USER=${WATCHTOWER_REPO_USER}
+      - TZ=${TZ}
+      - WATCHTOWER_CLEANUP=${WATCHTOWER_CLEANUP}
+      - WATCHTOWER_INCLUDE_STOPPED=${WATCHTOWER_INCLUDE_STOPPED}
+      - WATCHTOWER_MONITOR_ONLY=${WATCHTOWER_MONITOR_ONLY}
+      - WATCHTOWER_NOTIFICATION_TEMPLATE=${WATCHTOWER_NOTIFICATION_TEMPLATE}
+      - WATCHTOWER_NOTIFICATION_URL=${WATCHTOWER_NOTIFICATION_URL}
+      - WATCHTOWER_NOTIFICATIONS_LEVEL=${WATCHTOWER_NOTIFICATIONS_LEVEL}
+      - WATCHTOWER_NOTIFICATIONS=${WATCHTOWER_NOTIFICATIONS}
+      - WATCHTOWER_SCHEDULE=${WATCHTOWER_SCHEDULE}
+      - WATCHTOWER_TIMEOUT=${WATCHTOWER_TIMEOUT}
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    restart: ${WATCHTOWER_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKERSTORAGEDIR}:/storage
+networks:
+  frontend:
+    name: frontend
+    driver: bridge
