@@ -1,5 +1,5 @@
 sudo visudo
-noes14155 ALL=(ALL) NOPASSWD:ALL
+username ALL=(ALL) NOPASSWD:ALL
 sudo lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
 sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
 sudo mkdir /mnt/nextcloud
@@ -11,12 +11,12 @@ UUID="4010086410086370" /mnt/nextcloud/ ext4 defaults 0 0
 UUID="4A4233BA4233AA19" /mnt/ext/ ntfs defaults 0 0
 
 sudo apt upgrade -y && sudo apt install curl git unzip wget nginx samba vsftpd
-sudo cp '/mnt/Public/htpc/config for docker/vsftpd.conf' /etc/vsftpd.conf
-sudo cp '/mnt/Public/htpc/config for docker/smb.conf' /etc/samba/smb.conf
+sudo cp '/mnt/Public/htpc/dockerforubuntu/vsftpd.conf' /etc/vsftpd.conf
+sudo cp '/mnt/Public/htpc/dockerforubutu/smb.conf' /etc/samba/smb.conf
 sudo smbpasswd -a noes14155
 
 sudo cp -R '/mnt/Public/htpc/config for docker/.config/appdata' /home/noes14155/.config
-sudo chown -R noes14155:noes14155 /home/noes14155/.config/appdata
+sudo chown -R username:username /home/noes14155/.config/appdata
 sudo chmod -R 755 /home/noes14155/.config/appdata
 
 
@@ -35,8 +35,8 @@ sudo apt autoremove --purge snapd gnome-software-plugin-snap
 sudo apt-mark hold snapd
 
 sudo su
-curl https://get.acme.sh | sh -s email=noes14155@gmail.com
-export DYNV6_TOKEN="zFToiRQcehuqfgHfszS4JYJA4FqzMk"
+curl https://get.acme.sh | sh -s email=email
+export DYNV6_TOKEN="dynv6 token"
 acme.sh --issue --dns dns_dynv6 -d betahome.v6.rocks
 acme.sh --issue --dns dns_dynv6 -d mynextcloud.v6.rocks
 
